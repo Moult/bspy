@@ -10,6 +10,19 @@ class Gbxsd():
         self.ns={'a':'http://www.w3.org/2001/XMLSchema'}
     
     
+    def _attribute(self,element_name,attribute_name):
+        """Returns an attribute lxml node
+        
+        Arguments:
+            -element_name (str): the name of the element node
+            -attribute_name (str): the name of the attribute node
+        
+        """
+        e=self._element(element_name)
+        st='.//a:attribute[@name="%s"]' % (attribute_name)
+        return e.xpath(st,namespaces=self.ns)[0]
+    
+    
     def _element(self,name):
         """Returns an element node 
         
@@ -40,6 +53,31 @@ class Gbxsd():
         return e.xpath(st,namespaces=self.ns)
     
     
+    def _node_children_dict(self,xpath):
+        """A recursive function which shows the structure of the xsd file.
+        
+        This is used for information only, to see what is going on within 
+            the xsd file when designing this class
+        
+        """
+        s=set()
+        st=xpath+'/a:*'
+        l=self._ElementTree.getroot().xpath(st,namespaces=self.ns)
+        l=[x.tag.split('}')[1] for x in l]
+        s.update(l)
+        d={}
+        for x in s:
+            st=xpath+'/a:%s' % (x)
+            #attributes
+            s1=set()
+            l=self._ElementTree.getroot().xpath(st,namespaces=self.ns)
+            for l1 in l:
+                s1.update(list(l1.attrib.keys()))
+            d1=self._node_children_dict(st)
+            d[x + ' ' + (str(s1) if s1 else '{None}')]=d1 if d1 else None
+        return d
+    
+    
     def _simpleType(self,name):
         """Returns a simpleType element
         
@@ -50,7 +88,53 @@ class Gbxsd():
         
         """
         st='/a:schema/a:simpleType[@name="%s"]' % (name)
-        return self._ElementTree.getroot().xpath(st,namespaces=self.ns)[0]
+        l=self._ElementTree.getroot().xpath(st,namespaces=self.ns)
+        if len(l)>0:
+            return l[0]
+        else:
+            raise KeyError("There is no simpleType with the name '%s'" % name)
+    
+    
+    def attribute_restriction_values(self,element_name,attribute_name):
+        """Returns the possible values of a restricted attribute
+        
+        Return value is a list of strings.
+        
+        If no restriction values are present then an empty list is returned.
+        
+        """
+        def _simpleType_values(simpleType_element):
+            "Returns the restriction values for a simpleType element"
+            st='./a:restriction/a:enumeration/@value'
+            return simpleType_element.xpath(st,namespaces=self.ns)
+        
+        a=self._attribute(element_name,attribute_name)
+        st='./a:simpleType'
+        l=a.xpath(st,namespaces=self.ns)
+        if len(l)>0:
+            s=l[0]
+            return _simpleType_values(s)
+        typ=a.get('type')
+        try:
+            s=self._simpleType(typ)
+            return _simpleType_values(s)
+        except KeyError:
+            return []
+    
+    
+    def attribute_restrictions_exist(self,element_name,attribute_name):
+        """Returns True if the attribute has restrictions, otherwise False
+        
+        """
+        a=self._attribute(element_name,attribute_name)
+        st='.//a:restriction'
+        l=a.xpath(st,namespaces=self.ns)
+        if len(l)>0: return True
+        typ=a.get('type')
+        if typ:
+            b=self.simpleType_exists(typ)
+            if b: return True
+        return False
     
     
     def element_attributes_exist(self,name):
@@ -71,6 +155,8 @@ class Gbxsd():
         l=self._element_attributes(name)
         l1=[dict(x.attrib) for x in l]
         return l1
+    
+    
     
     
     def element_children_exist(self,name):
@@ -119,43 +205,48 @@ class Gbxsd():
     
     
     
-    def element_type(self,element_name):
-        """Returns the 'type' or 'base' attribute of an element
+#    def element_type(self,element_name):
+#        """Returns the 'type' or 'base' attribute of an element
+#        """
+#        e=self._element(element_name)
+#        typ=e.get('type',None)
+#        if typ: return typ
+#        st='./a:simpleType/a:restriction/@base'
+#        typ=e.xpath(st,namespaces=self.ns)
+#        if typ: return typ[0]
+#        st='./a:complexType/a:simpleContent/a:extension/@base'
+#        typ=e.xpath(st,namespaces=self.ns)
+#        if typ: return typ[0]
+#        return None
+        
+    
+    def simpleType_exists(self,name):
+        """Returns True if the simpleType exists, otherwise False
+        
         """
-        e=self._element(element_name)
-        typ=e.get('type',None)
-        if typ: return typ
-        st='./a:simpleType/a:restriction/@base'
-        typ=e.xpath(st,namespaces=self.ns)
-        if typ: return typ[0]
-        st='./a:complexType/a:simpleContent/a:extension/@base'
-        typ=e.xpath(st,namespaces=self.ns)
-        if typ: return typ[0]
-        return None
+        try:
+            self._simpleType(name)
+            return True
+        except KeyError:
+            return False
         
-    
-    def simpleType_values(self,name):
-        """Returns a list of the enumeration values of a simpleType
         
-        The simpleType element is a child of the schema element
-        
-        Arguments:
-            -name (str): the name of the simpleType element
-            
-        """
-        e=self._simpleType(name)
-        st='./a:restriction/a:enumeration/@value'
-        return e.xpath(st,namespaces=self.ns)
-    
-    
     def read(self,fp):
-        """Reads a refitxsd file and returns an etree object
+        """Reads a gbXML schema file and returns an etree object
         
         Arguments:
             fp (str): the filepath 
         
         """
         return etree.parse(fp)
+    
+    
+    
+    
+    
+    
+    
+    
     
     
     
@@ -170,25 +261,7 @@ class Gbxsd():
 #    """
 #    return etree.parse(fp)
 #
-#def _node_children_dict(xsd,xpath):
-#    s=set()
-#    st=xpath+'/a:*'
-#    #print(st)
-#    l=xsd.getroot().xpath(st,namespaces=ns)
-#    l=[x.tag.split('}')[1] for x in l]
-#    s.update(l)
-#    #print(s)
-#    d={}
-#    for x in s:
-#        st=xpath+'/a:%s' % (x)
-#        #attributes
-#        s1=set()
-#        l=xsd.getroot().xpath(st,namespaces=ns)
-#        for l1 in l:
-#            s1.update(list(l1.attrib.keys()))
-#        d1=_node_children_dict(xsd,st)
-#        d[x + ' ' + (str(s1) if s1 else '{None}')]=d1 if d1 else None
-#    return d
+
 #    
 #def _show_schema_children(xsd):
 #    "Returns a dictionary of nodes and their children"

@@ -6,6 +6,7 @@ import config
 from bspy import Gbxsd
 from datetime import datetime
 from lxml import etree
+import json
 
 class Test_gbxsd(unittest.TestCase):
         
@@ -13,6 +14,40 @@ class Test_gbxsd(unittest.TestCase):
         g=Gbxsd(config.xsd)
         check=isinstance(g,Gbxsd)
         self.assertEqual(True,check)
+        
+        
+    def test__node_children_dict(self):
+        g=Gbxsd(config.xsd)
+        d=g._node_children_dict('')
+        with open('node_children_dict.json','w') as f:
+            json.dump(d,f,indent=4,sort_keys=True)
+            
+            
+    def test__simpleType(self):
+        g=Gbxsd(config.xsd)
+        s=g._simpleType('absorptanceUnitEnum')
+        check=isinstance(s,etree._Element)
+        self.assertEqual(True,check)
+        with self.assertRaises(KeyError):
+            s=g._simpleType('namedoesnotexist')
+        
+        
+    def test_attribute_restriction_values(self):
+        g=Gbxsd(config.xsd)
+        l=g.attribute_restriction_values('Absorptance','type')
+        check=['IntIR', 'IntSolar', 'IntVisible', 'IntTotal', 'ExtIR', 'ExtSolar', 'ExtVisible', 'ExtTotal']
+        self.assertEqual(l,check)
+        l=g.attribute_restriction_values('AdjacentSpaceId','spaceIdRef')
+        check=[]
+        self.assertEqual(l,check)
+        
+        
+    def test_attribute_restrictions_exist(self):
+        g=Gbxsd(config.xsd)
+        b=g.attribute_restrictions_exist('Absorptance','type')
+        self.assertEqual(b,True)
+        b=g.attribute_restrictions_exist('AdjacentSpaceId','spaceIdRef')
+        self.assertEqual(b,False)
         
         
     def test_element_attributes_exist(self):
@@ -63,12 +98,14 @@ class Test_gbxsd(unittest.TestCase):
         self.assertEqual(l[:6],check)
     
     
-    
-    def test_gbxsd_simpleType_values(self):
+    def test_simpleType_exists(self):
         g=Gbxsd(config.xsd)
-        l=g.simpleType_values('absorptanceUnitEnum')
-        check=['IntIR', 'IntSolar', 'IntVisible', 'IntTotal', 'ExtIR', 'ExtSolar', 'ExtVisible', 'ExtTotal']
-        self.assertEqual(l,check)
+        b=g.simpleType_exists('absorptanceUnitEnum')
+        self.assertEqual(b,True)
+        b=g.simpleType_exists('namedoesnotexist')
+        self.assertEqual(b,False)
+        
+    
 #    
 #    
 #    def test_gbxml_child_node_values(self):
