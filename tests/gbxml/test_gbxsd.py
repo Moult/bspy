@@ -14,6 +14,9 @@ class Test_gbxsd(unittest.TestCase):
         g=Gbxsd(config.xsd)
         check=isinstance(g,Gbxsd)
         self.assertEqual(True,check)
+        print(g)
+        print(g._ElementTree)
+        print(g.ns)
         
         
     def test__node_children_dict(self):
@@ -30,6 +33,14 @@ class Test_gbxsd(unittest.TestCase):
         self.assertEqual(True,check)
         with self.assertRaises(KeyError):
             s=g._simpleType('namedoesnotexist')
+            
+            
+    def test__simpleType_exists(self):
+        g=Gbxsd(config.xsd)
+        b=g._simpleType_exists('absorptanceUnitEnum')
+        self.assertEqual(b,True)
+        b=g._simpleType_exists('namedoesnotexist')
+        self.assertEqual(b,False)
         
         
     def test_attribute_restriction_values(self):
@@ -98,12 +109,7 @@ class Test_gbxsd(unittest.TestCase):
         self.assertEqual(l[:6],check)
     
     
-    def test_simpleType_exists(self):
-        g=Gbxsd(config.xsd)
-        b=g.simpleType_exists('absorptanceUnitEnum')
-        self.assertEqual(b,True)
-        b=g.simpleType_exists('namedoesnotexist')
-        self.assertEqual(b,False)
+    
         
     
 #    

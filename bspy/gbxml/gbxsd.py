@@ -3,10 +3,16 @@
 from lxml import etree     
 
 class Gbxsd():
-    "The gbXML xsd file"
+    "A class representing a gbXML xsd file"
     
     def __init__(self,fp):
-        self._ElementTree=self.read(fp)
+        """Initialises the object
+        
+        - Reads in the .xsd file
+        - Sets the namespace variable
+        
+        """
+        self._ElementTree=self._read(fp)
         self.ns={'a':'http://www.w3.org/2001/XMLSchema'}
     
     
@@ -78,6 +84,16 @@ class Gbxsd():
         return d
     
     
+    def _read(self,fp):
+        """Reads a gbXML schema file and returns an etree object
+        
+        Arguments:
+            fp (str): the filepath 
+        
+        """
+        return etree.parse(fp)
+    
+    
     def _simpleType(self,name):
         """Returns a simpleType element
         
@@ -94,6 +110,17 @@ class Gbxsd():
         else:
             raise KeyError("There is no simpleType with the name '%s'" % name)
     
+    
+    def _simpleType_exists(self,name):
+        """Returns True if the simpleType exists, otherwise False
+        
+        """
+        try:
+            self._simpleType(name)
+            return True
+        except KeyError:
+            return False
+        
     
     def attribute_restriction_values(self,element_name,attribute_name):
         """Returns the possible values of a restricted attribute
@@ -132,7 +159,7 @@ class Gbxsd():
         if len(l)>0: return True
         typ=a.get('type')
         if typ:
-            b=self.simpleType_exists(typ)
+            b=self._simpleType_exists(typ)
             if b: return True
         return False
     
@@ -194,6 +221,7 @@ class Gbxsd():
         l1=[{'tag':x.tag.split('}')[1],**dict(x.attrib)} for x in l]
         return l1
     
+    
     def element_names(self):
         """Returns a list of all element names
         
@@ -220,25 +248,9 @@ class Gbxsd():
 #        return None
         
     
-    def simpleType_exists(self,name):
-        """Returns True if the simpleType exists, otherwise False
+
         
-        """
-        try:
-            self._simpleType(name)
-            return True
-        except KeyError:
-            return False
-        
-        
-    def read(self,fp):
-        """Reads a gbXML schema file and returns an etree object
-        
-        Arguments:
-            fp (str): the filepath 
-        
-        """
-        return etree.parse(fp)
+    
     
     
     

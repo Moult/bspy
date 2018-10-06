@@ -1,21 +1,21 @@
 {
-    "schema {'{http://www.w3.org/2001/XMLSchema-instance}schemaLocation', 'attributeFormDefault', 'targetNamespace', 'elementFormDefault', 'version'}": {
+    "schema {'attributeFormDefault', 'elementFormDefault', '{http://www.w3.org/2001/XMLSchema-instance}schemaLocation', 'targetNamespace', 'version'}": {
         "annotation {None}": {
             "documentation {None}": null
         },
-        "element {'type', 'name'}": {
+        "element {'name', 'type'}": {
             "annotation {None}": {
                 "appinfo {None}": null,
                 "documentation {None}": null
             },
             "complexType {None}": {
                 "all {None}": {
-                    "element {'ref', 'minOccurs'}": null
+                    "element {'minOccurs', 'ref'}": null
                 },
                 "annotation {None}": {
                     "documentation {None}": null
                 },
-                "attribute {'type', 'name', 'use', 'default'}": {
+                "attribute {'name', 'default', 'type', 'use'}": {
                     "annotation {None}": {
                         "appinfo {None}": null,
                         "documentation {None}": null
@@ -27,9 +27,9 @@
                         "union {'memberTypes'}": null
                     }
                 },
-                "choice {'maxOccurs', 'minOccurs'}": {
-                    "any {'maxOccurs', 'processContents', 'namespace', 'minOccurs'}": null,
-                    "element {'maxOccurs', 'ref', 'minOccurs'}": {
+                "choice {'minOccurs', 'maxOccurs'}": {
+                    "any {'namespace', 'minOccurs', 'processContents', 'maxOccurs'}": null,
+                    "element {'minOccurs', 'ref', 'maxOccurs'}": {
                         "annotation {None}": {
                             "documentation {None}": null
                         }
@@ -37,7 +37,7 @@
                 },
                 "simpleContent {None}": {
                     "extension {'base'}": {
-                        "attribute {'type', 'name', 'use'}": {
+                        "attribute {'name', 'type', 'use'}": {
                             "annotation {None}": {
                                 "documentation {None}": null
                             },
