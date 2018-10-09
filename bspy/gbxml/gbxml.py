@@ -8,11 +8,24 @@ class Gbxml():
     "An object that represents a gbXML dataset"
     
     def __init__(self,
-                 xml_fp,
-                 xsd_fp):
-        self._ElementTree=self.read(xml_fp)
+                 xml_fp=None,
+                 xsd_fp=None):
+        """Initialises a new Gbxml instance
+        
+        Arguments:
+            xml_fp (str): filepath to a gbXML file. This is read in as an 
+                lxml._ElementTree object. If not supplied then a 
+                new lxml._ElementTree object with only a root element is created.
+        
+        
+        """
+        if not xml_fp: xml_fp='blank.xml'
+        self._ElementTree=self._read(xml_fp)
         self.ns={'a':'http://www.gbxml.org/schema'}
-        self.Gbxsd=Gbxsd(xsd_fp)
+        if xsd_fp:
+            self.gbxsd=Gbxsd(xsd_fp)
+        else:
+            self.gbxsd=None
         
 
     def _element(self,id,label='*'):
@@ -30,6 +43,50 @@ class Gbxml():
         "Returns the label of an element"
         return  e.tag.split('}')[1]
         
+    
+    def _read(self,fp):
+        """Reads a xml file and returns an etree object
+        
+        Arguments:
+            fp (str): the filepath 
+        """
+        return etree.parse(fp)
+    
+    
+    def _root(self):
+        "Returns the root element"
+        return self._ElementTree.getroot()
+    
+# INPUT / OUTPUT
+    
+    
+    def xmlstring(self,e=None):
+        """Returns a string of an xml element
+        
+        Arguments:
+            - e (Element): default is root node
+        
+        """
+        if not e: e=self._root()
+        return etree.tostring(e,pretty_print=True).decode()
+    
+    
+    def write(self,fp):
+        """Writes the gbXML file to disc
+        
+        Arguments:
+            fp (str): the filepath
+        """
+        st=etree.tostring(self._root(),xml_declaration=True)
+        with open(fp,'wb') as f:
+            f.write(st)
+        
+
+# MODIFYING
+            
+            
+
+    
     
     def child_node_text(self,id,label='*'):
         """Returns a dictionary listing any child nodes which have text
@@ -102,16 +159,7 @@ class Gbxml():
                 'label':self._label(parent)}
         
     
-    def read(self,fp):
-        """Reads a refitxml file and returns an etree object
-        
-        Arguments:
-            fp (str): the filepath 
-        
-        """
-        #print('READING XML FILE...')
-        #print(fp)
-        return etree.parse(fp)
+    
     
     
     def surface_adjacent_objects(self,id):

@@ -1,14 +1,35 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-
 import config
-from bspy import Gbxml
-#from openbuilding.system import System
-from datetime import datetime
-from lxml import etree
+from bspy import Gbxml, Gbxsd
 
-#class Test_gbxml(unittest.TestCase):
+class Test_gbxml(unittest.TestCase):
+    
+    def test_gbxml___init__(self):
+        g=Gbxml(config.xml,config.xsd)
+        print(g)
+        print(g._ElementTree)
+        print(g.ns)
+        print(g.gbxsd)
+        print(type(g._root()))
+        b=isinstance(g,Gbxml)
+        self.assertEqual(b,True)
+        b=isinstance(g.gbxsd,Gbxsd)
+        self.assertEqual(b,True)
+        g=Gbxml(xsd_fp=config.xsd)
+        b=isinstance(g,Gbxml)
+        self.assertEqual(b,True)
+        
+        
+    def test_gbxml_string(self):
+        pass
+        
+        
+    def test_gbxml_write(self):
+        g=Gbxml(config.xml,config.xsd)
+        g.write('text.xml')
+        
 #        
 #    def test_gbxml_child_node_values(self):
 #        #print('TESTING gbxml.child_node_values...')
