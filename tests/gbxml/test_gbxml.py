@@ -3,16 +3,15 @@
 import unittest
 import config
 from bspy import Gbxml, Gbxsd
+from lxml import etree
+from io import StringIO
 
 class Test_gbxml(unittest.TestCase):
+
+# OBJECT CREATION
     
     def test_gbxml___init__(self):
         g=Gbxml(config.xml,config.xsd)
-        print(g)
-        print(g._ElementTree)
-        print(g.ns)
-        print(g.gbxsd)
-        print(type(g._root()))
         b=isinstance(g,Gbxml)
         self.assertEqual(b,True)
         b=isinstance(g.gbxsd,Gbxsd)
@@ -20,17 +19,54 @@ class Test_gbxml(unittest.TestCase):
         g=Gbxml(xsd_fp=config.xsd)
         b=isinstance(g,Gbxml)
         self.assertEqual(b,True)
-        
-        
-    def test_gbxml_string(self):
-        pass
-        
+        g=Gbxml()
+        b=isinstance(g,Gbxml)
+        self.assertEqual(b,True)
+
+
+#OUTPUT
+     
+    def test_gbxml_xmlstring(self):
+        g=Gbxml(config.xml,config.xsd)
+        st=g.xmlstring()
+        check="""<gbXML xmlns="http://www.gbxml.org/schema" temperatureUnit="C" lengthUnit="Meters" areaUnit="SquareMeters" volumeUnit="CubicMeters" useSIUnitsForResults="true" version="0.37">
+  <Campus id="campus-1">"""
+        self.assertEqual(st[0:200],check)
+                
         
     def test_gbxml_write(self):
         g=Gbxml(config.xml,config.xsd)
-        g.write('text.xml')
+        g.write('test_gbxml_write.xml')
         
-#        
+
+# VALIDATION
+    
+    def test_gbxml_validate(self):
+        g=Gbxml(config.xml,config.xsd)
+        b=g.validate()
+        check=True
+        self.assertEqual(b,check)
+        g._ElementTree=etree.parse(StringIO('<a><c></c></a>'))
+        b=g.validate()
+        check=False
+        self.assertEqual(b,check)
+        
+        
+# EDITING
+        
+    def test_gbxml_add_element(self):
+        g=Gbxml()
+        gbxml_element=g._root()
+        g.add_element(gbxml_element,'Campus')
+        print(g.xmlstring())
+        
+        
+        
+        
+        
+        
+        
+        
 #    def test_gbxml_child_node_values(self):
 #        #print('TESTING gbxml.child_node_values...')
 #        g=Gbxml(config.xml,config.xsd)

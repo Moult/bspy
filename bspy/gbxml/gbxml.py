@@ -2,7 +2,9 @@
 
 from lxml import etree
 from .gbxsd import Gbxsd
-
+#from pkg_resources import resource_filename
+import pkgutil
+from io import BytesIO
 
 class Gbxml():
     "An object that represents a gbXML dataset"
@@ -16,16 +18,24 @@ class Gbxml():
             xml_fp (str): filepath to a gbXML file. This is read in as an 
                 lxml._ElementTree object. If not supplied then a 
                 new lxml._ElementTree object with only a root element is created.
-        
-        
+                
+            xsd_fp (str): filepath to a gbXML schema file. If not supplied 
+                then a default gbXMl schema file is used.
+                
         """
-        if not xml_fp: xml_fp='blank.xml'
-        self._ElementTree=self._read(xml_fp)
+        if xml_fp: 
+            self._ElementTree=self._read(xml_fp)
+        else:
+            st = pkgutil.get_data(__package__, 'blank.xml')
+            self._ElementTree=self._read(BytesIO(st))
+            
         self.ns={'a':'http://www.gbxml.org/schema'}
+        
         if xsd_fp:
             self.gbxsd=Gbxsd(xsd_fp)
         else:
-            self.gbxsd=None
+            st = pkgutil.get_data(__package__, 'GreenBuildingXML_Ver6.01.xsd')
+            self.gbxsd=Gbxsd(BytesIO(st))
         
 
     def _element(self,id,label='*'):
@@ -48,7 +58,7 @@ class Gbxml():
         """Reads a xml file and returns an etree object
         
         Arguments:
-            fp (str): the filepath 
+            fp (str): the filepath or a file-like object
         """
         return etree.parse(fp)
     
@@ -80,12 +90,69 @@ class Gbxml():
         st=etree.tostring(self._root(),xml_declaration=True)
         with open(fp,'wb') as f:
             f.write(st)
+       
+# VALIDATION
+            
+    def validate(self):
+        """Validates the gbXMl file using the schema
+        
+        Returns True if the gbXML file is valid, otherwise False
+        
+        """
+        xmlschema = etree.XMLSchema(self.gbxsd._ElementTree)
+        result=xmlschema.validate(self._ElementTree)
+        return result
+        
+# EDITING
+        
+    def add_element(self,parent_element,label):
+        """Adds an element to the gbXML
+        
+        Returns the newly created element
+        
+        Arguments:
+            - parent_element (lxml._Element or str): the parent element that the
+                new element is added to. This can be either a lxml._Element object
+                or a string with the element id.
+            - label (str): the label or tag of the new element
+                
+        """
+        if isinstance(parent_element,str):
+            parent_element=self._element(parent_element)
+        return etree.SubElement(parent_element,label)
+    
+    def set_attribute(self,element,key,value):
+        pass
+    
+    
+    def set_text(self,value):
+        pass
+    
+    
+    def remove_element(self,element):
+        pass
+    
+    def remove_attribute(self,element,key):
+        pass
+        
+    def remove_text(self,element):
+        pass
+    
+    
+    
+        
+        
         
 
-# MODIFYING
-            
-            
-
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     
     def child_node_text(self,id,label='*'):
