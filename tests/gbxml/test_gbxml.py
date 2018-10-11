@@ -34,6 +34,13 @@ class Test_gbxml(unittest.TestCase):
         self.assertEqual(st[0:200],check)
                 
         
+    def test_gbxml_xpath(self):
+        g=Gbxml(config.xml,config.xsd)
+        st='/gbxml:gbXML'
+        l=g.xpath(st)
+        print(l)
+        
+        
     def test_gbxml_write(self):
         g=Gbxml(config.xml,config.xsd)
         g.write('test_gbxml_write.xml')
@@ -56,13 +63,20 @@ class Test_gbxml(unittest.TestCase):
         
     def test_gbxml_add_element(self):
         g=Gbxml()
-        gbxml_element=g._root()
-        g.add_element(gbxml_element,'Campus')
-        print(g.xmlstring())
+        e=g.add_element(g.root(),'Campus')
+        n=len(g.elements())
+        check=2
+        self.assertEqual(n,check)
+         
+# QUERYING
         
-        
-        
-        
+    def test_gbxml_elements(self):
+        g=Gbxml(config.xml,config.xsd)
+        l=g.elements()
+        n=len(l)
+        check=3953
+        self.assertEqual(n,check)
+        print(l[0:5])
         
         
         

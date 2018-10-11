@@ -29,29 +29,13 @@ class Gbxml():
             st = pkgutil.get_data(__package__, 'blank.xml')
             self._ElementTree=self._read(BytesIO(st))
             
-        self.ns={'a':'http://www.gbxml.org/schema'}
+        self.ns={'gbxml':'http://www.gbxml.org/schema'}
         
         if xsd_fp:
             self.gbxsd=Gbxsd(xsd_fp)
         else:
             st = pkgutil.get_data(__package__, 'GreenBuildingXML_Ver6.01.xsd')
             self.gbxsd=Gbxsd(BytesIO(st))
-        
-
-    def _element(self,id,label='*'):
-        "Returns the element"
-        st='//a:%s[@id="%s"]' % (label,id)
-        return self._ElementTree.getroot().xpath(st,namespaces=self.ns)[0]
-
-    
-    def _id(self,e):
-        "Returns the id of an element"
-        return e.get('id')
-    
-    
-    def _label(self,e):
-        "Returns the label of an element"
-        return  e.tag.split('}')[1]
         
     
     def _read(self,fp):
@@ -61,13 +45,9 @@ class Gbxml():
             fp (str): the filepath or a file-like object
         """
         return etree.parse(fp)
+
     
-    
-    def _root(self):
-        "Returns the root element"
-        return self._ElementTree.getroot()
-    
-# INPUT / OUTPUT
+# OUTPUT
     
     
     def xmlstring(self,e=None):
@@ -77,8 +57,21 @@ class Gbxml():
             - e (Element): default is root node
         
         """
-        if not e: e=self._root()
+        if not e: e=self.root()
         return etree.tostring(e,pretty_print=True).decode()
+    
+    
+    def xpath(self,st_xpath,e=None):
+        """Returns the result of an xpath operation on the gbXML file
+        
+        Arguments
+            - st_xpath (str): the xpath string
+            - e (lxml.Element): the element for the xpath operation. The 
+                default is the root element
+        
+        """
+        if not e: e=self.root()
+        return e.xpath(st_xpath,namespaces=self.ns)
     
     
     def write(self,fp):
@@ -87,7 +80,7 @@ class Gbxml():
         Arguments:
             fp (str): the filepath
         """
-        st=etree.tostring(self._root(),xml_declaration=True)
+        st=etree.tostring(self.root(),xml_declaration=True)
         with open(fp,'wb') as f:
             f.write(st)
        
@@ -119,7 +112,7 @@ class Gbxml():
         """
         if isinstance(parent_element,str):
             parent_element=self._element(parent_element)
-        return etree.SubElement(parent_element,label)
+        return etree.SubElement(parent_element,'{%s}%s' % (self.ns['gbxml'],label))
     
     def set_attribute(self,element,key,value):
         pass
@@ -140,9 +133,33 @@ class Gbxml():
     
     
     
+# QUERYING
+        
+    def element(self,id,label='*'):
+        "Returns the element"
+        st='//a:%s[@id="%s"]' % (label,id)
+        return self._ElementTree.getroot().xpath(st,namespaces=self.ns)[0]
+
+
+    def elements(self):
+        "Returns all elements of the gbXML file"
+        st='//gbxml:*'
+        return self.xpath(st)
+
+    
+    def id(self,e):
+        "Returns the id of an element"
+        return e.get('id')
+    
+    
+    def label(self,e):
+        "Returns the label of an element"
+        return  e.tag.split('}')[1]
         
         
-        
+    def root(self):
+        "Returns the root element"
+        return self._ElementTree.getroot()
 
     
     
