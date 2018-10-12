@@ -38,13 +38,14 @@ class Test_gbxml(unittest.TestCase):
         g=Gbxml(config.xml,config.xsd)
         st='/gbxml:gbXML'
         l=g.xpath(st)
-        print(l)
+        n=len(l)
+        check=1
+        self.assertEqual(n,check)
         
         
-    def test_gbxml_write(self):
-        g=Gbxml(config.xml,config.xsd)
-        g.write('test_gbxml_write.xml')
-        
+#    def test_gbxml_write(self):
+#        g=Gbxml(config.xml,config.xsd)
+#        g.write('test_gbxml_write.xml')
 
 # VALIDATION
     
@@ -63,12 +64,40 @@ class Test_gbxml(unittest.TestCase):
         
     def test_gbxml_add_element(self):
         g=Gbxml()
-        e=g.add_element(g.root(),'Campus')
+        g.add_element(g.root(),'Campus')
         n=len(g.elements())
         check=2
         self.assertEqual(n,check)
+        
+        
+    def test_gbxml_set_attribute(self):
+        g=Gbxml()
+        e=g.root()
+        e=g.set_attribute(e,'temperatureUnit','K')
+        st=e.get('temperatureUnit')
+        check='K'
+        self.assertEqual(st,check)
+        
+        
+    def test_gbxml_set_text(self):
+        g=Gbxml()
+        e=g.add_element(g.root(),'Campus')
+        e=g.add_element(e,'Name')
+        e=g.set_text(e,'MyCampus')
+        st=e.text
+        check='MyCampus'
+        self.assertEqual(st,check)
+    
          
 # QUERYING
+        
+    def test_gbxml_element(self):
+        g=Gbxml(config.xml,config.xsd)
+        e=g.element(id='campus-1')
+        st=g.label(e)
+        check='Campus'
+        self.assertEqual(st,check)
+        
         
     def test_gbxml_elements(self):
         g=Gbxml(config.xml,config.xsd)
@@ -76,9 +105,22 @@ class Test_gbxml(unittest.TestCase):
         n=len(l)
         check=3953
         self.assertEqual(n,check)
-        print(l[0:5])
         
         
+    def test_gbxml_label(self):
+        g=Gbxml()
+        e=g.elements()[0]
+        st=g.label(e)
+        check='gbXML'
+        self.assertEqual(st,check)
+        
+        
+    def test_gbxml_root(self):
+        g=Gbxml()
+        e=g.root()
+        st=g.label(e)
+        check='gbXML'
+        self.assertEqual(st,check)
         
         
 #    def test_gbxml_child_node_values(self):

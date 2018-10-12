@@ -50,28 +50,28 @@ class Gbxml():
 # OUTPUT
     
     
-    def xmlstring(self,e=None):
+    def xmlstring(self,element=None):
         """Returns a string of an xml element
         
         Arguments:
-            - e (Element): default is root node
+            - element (lxml.etree._Element): default is root node
         
         """
-        if not e: e=self.root()
-        return etree.tostring(e,pretty_print=True).decode()
+        if not element: element=self.root()
+        return etree.tostring(element,pretty_print=True).decode()
     
     
-    def xpath(self,st_xpath,e=None):
+    def xpath(self,st_xpath,element=None):
         """Returns the result of an xpath operation on the gbXML file
         
         Arguments
             - st_xpath (str): the xpath string
-            - e (lxml.Element): the element for the xpath operation. The 
+            - element (lxml.etree._Element): the element for the xpath operation. The 
                 default is the root element
         
         """
-        if not e: e=self.root()
-        return e.xpath(st_xpath,namespaces=self.ns)
+        if not element: element=self.root()
+        return element.xpath(st_xpath,namespaces=self.ns)
     
     
     def write(self,fp):
@@ -111,15 +111,43 @@ class Gbxml():
                 
         """
         if isinstance(parent_element,str):
-            parent_element=self._element(parent_element)
+            parent_element=self.element(parent_element)
         return etree.SubElement(parent_element,'{%s}%s' % (self.ns['gbxml'],label))
     
+    
     def set_attribute(self,element,key,value):
-        pass
+        """Sets the attribute of an element
+        
+        Returns the modified element
+        
+        Arguments:
+            - element (lxml._Element or str): This a lxml._Element object
+                or a string with the element id.
+            - key (str): the name of the attribute
+            - value (str): the value of the attribute
+        
+        """
+        if isinstance(element,str):
+            element=self.element(element)
+        element.set(key,value)
+        return element
     
     
-    def set_text(self,value):
-        pass
+    def set_text(self,element,text):
+        """Sets the text of an element
+        
+        Returns the modified element
+        
+        Arguments:
+            - element (lxml._Element or str): This a lxml._Element object
+                or a string with the element id.
+            - text (str): the text
+        
+        """
+        if isinstance(element,str):
+            element=self.element(element)
+        element.text=text
+        return element
     
     
     def remove_element(self,element):
@@ -134,34 +162,92 @@ class Gbxml():
     
     
 # QUERYING
-        
-    def element(self,id,label='*'):
-        "Returns the element"
-        st='//a:%s[@id="%s"]' % (label,id)
-        return self._ElementTree.getroot().xpath(st,namespaces=self.ns)[0]
-
-
+    
     def elements(self):
         "Returns all elements of the gbXML file"
         st='//gbxml:*'
         return self.xpath(st)
-
-    
-    def id(self,e):
-        "Returns the id of an element"
-        return e.get('id')
     
     
-    def label(self,e):
-        "Returns the label of an element"
-        return  e.tag.split('}')[1]
-        
-        
     def root(self):
         "Returns the root element"
         return self._ElementTree.getroot()
+    
+    
+    def element(self,id,label='*'):
+        """Returns an element from the gbXML file
+        
+        Arguments:
+            - id (str): the id of the element
+            - label (str): the label of the element
+        
+        """
+        st='//gbxml:%s[@id="%s"]' % (label,id)
+        return self.xpath(st)[0]
 
     
+    def label(self,element):
+        """Returns the label of an element
+        
+        Arguments:
+            - element (lxml._Element or str): This a lxml._Element object
+                or a string with the element id.        
+        """
+        if isinstance(element,str):
+            element=self.element(element)
+        return  element.tag.split('}')[1]
+            
+    
+    def attributes(self,element):
+        pass
+
+    
+    def text(self,element):
+        pass
+    
+    
+    def text_value(self,element):
+        pass
+    
+    
+    def child_elements(self,element,label='*'):
+        pass
+    
+    
+    def descendent_elements(self,element,label='*'):
+        pass
+    
+  
+    
+# FUNCTIONS - SURFACE
+    
+    
+    def surface_coordinates(self,id):
+        """Returns a list of coordinate tuples
+        """
+
+    
+    def surface_inner_space(self,id):
+        """Returns the inner Space element of a Surface, or None
+        """
+        
+    def surface_outer_space(self,id):
+        """Returns the outer Space element of a Surface, or None
+        """
+        
+        
+    
+# FUNCTIONS - ZONE
+        
+    def zone_add_element(self,id):
+        """Adds a zone to the gbXML file.
+        """
+        
+    def zone_detach_delete(self,id):
+        """Removes a Zone element and all IdRef links to the zone.
+        """
+        pass
+        
     
     
     
