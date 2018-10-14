@@ -1,21 +1,21 @@
 {
-    "schema {'attributeFormDefault', 'version', 'targetNamespace', '{http://www.w3.org/2001/XMLSchema-instance}schemaLocation', 'elementFormDefault'}": {
+    "schema {'{http://www.w3.org/2001/XMLSchema-instance}schemaLocation', 'elementFormDefault', 'attributeFormDefault', 'targetNamespace', 'version'}": {
         "annotation {None}": {
             "documentation {None}": null
         },
-        "element {'type', 'name'}": {
+        "element {'name', 'type'}": {
             "annotation {None}": {
                 "appinfo {None}": null,
                 "documentation {None}": null
             },
             "complexType {None}": {
                 "all {None}": {
-                    "element {'ref', 'minOccurs'}": null
+                    "element {'minOccurs', 'ref'}": null
                 },
                 "annotation {None}": {
                     "documentation {None}": null
                 },
-                "attribute {'type', 'name', 'default', 'use'}": {
+                "attribute {'name', 'default', 'use', 'type'}": {
                     "annotation {None}": {
                         "appinfo {None}": null,
                         "documentation {None}": null
@@ -28,8 +28,8 @@
                     }
                 },
                 "choice {'maxOccurs', 'minOccurs'}": {
-                    "any {'maxOccurs', 'processContents', 'namespace', 'minOccurs'}": null,
-                    "element {'maxOccurs', 'ref', 'minOccurs'}": {
+                    "any {'processContents', 'minOccurs', 'maxOccurs', 'namespace'}": null,
+                    "element {'maxOccurs', 'minOccurs', 'ref'}": {
                         "annotation {None}": {
                             "documentation {None}": null
                         }
@@ -37,7 +37,7 @@
                 },
                 "simpleContent {None}": {
                     "extension {'base'}": {
-                        "attribute {'type', 'name', 'use'}": {
+                        "attribute {'name', 'use', 'type'}": {
                             "annotation {None}": {
                                 "documentation {None}": null
                             },

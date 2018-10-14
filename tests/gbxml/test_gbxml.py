@@ -37,7 +37,7 @@ class Test_gbxml(unittest.TestCase):
     def test_gbxml_xpath(self):
         g=Gbxml(config.xml,config.xsd)
         st='/gbxml:gbXML'
-        l=g.xpath(st)
+        l=g.xpath(g.root(),st)
         n=len(l)
         check=1
         self.assertEqual(n,check)
@@ -88,16 +88,26 @@ class Test_gbxml(unittest.TestCase):
         check='MyCampus'
         self.assertEqual(st,check)
     
+    
+    def test_gbxml_remove_element(self):
+        g=Gbxml(config.xml,config.xsd)
+        g.remove_element('campus-1')
+        l=g.elements('Campus')
+        check=[]
+        self.assertEqual(l,check)
+        
+    
+    def test_gbxml_remove_attribute(self):
+        g=Gbxml()
+        e=g.root()
+        g.remove_attribute(e,'temperatureUnit')
+        d=g.attributes(e)
+        check={'lengthUnit': 'Meters', 'areaUnit': 'SquareMeters', 'volumeUnit': 'CubicMeters', 'useSIUnitsForResults': 'true', 'version': '0.37'}
+        self.assertEqual(d,check)
+    
+    
          
 # QUERYING
-        
-    def test_gbxml_element(self):
-        g=Gbxml(config.xml,config.xsd)
-        e=g.element(id='campus-1')
-        st=g.label(e)
-        check='Campus'
-        self.assertEqual(st,check)
-        
         
     def test_gbxml_elements(self):
         g=Gbxml(config.xml,config.xsd)
@@ -106,21 +116,90 @@ class Test_gbxml(unittest.TestCase):
         check=3953
         self.assertEqual(n,check)
         
-        
-    def test_gbxml_label(self):
-        g=Gbxml()
-        e=g.elements()[0]
-        st=g.label(e)
-        check='gbXML'
-        self.assertEqual(st,check)
-        
-        
+    
     def test_gbxml_root(self):
         g=Gbxml()
         e=g.root()
         st=g.label(e)
         check='gbXML'
         self.assertEqual(st,check)
+        
+        
+    def test_gbxml_element(self):
+        g=Gbxml(config.xml,config.xsd)
+        e=g.element(id='campus-1')
+        st=g.label(e)
+        check='Campus'
+        self.assertEqual(st,check)
+        
+          
+    def test_gbxml_label(self):
+        g=Gbxml()
+        e=g.root()
+        st=g.label(e)
+        check='gbXML'
+        self.assertEqual(st,check)
+        
+        
+    def test_gbxml_attributes(self):
+        g=Gbxml()
+        e=g.root()
+        d=g.attributes(e)
+        check={'temperatureUnit': 'C', 'lengthUnit': 'Meters', 'areaUnit': 'SquareMeters', 'volumeUnit': 'CubicMeters', 'useSIUnitsForResults': 'true', 'version': '0.37'}
+        self.assertEqual(d,check)
+        
+        
+    def test_gbxml_text(self):
+        g=Gbxml(config.xml,config.xsd)
+        e=g.elements(label='Name')[0]
+        st=g.text(e)
+        check='detached_house'
+        self.assertEqual(st,check)
+        
+        
+    def test_gbxml_child_elements(self):
+        g=Gbxml(config.xml,config.xsd)
+        l=g.child_elements(g.root(),label='Campus')
+        st=g.label(l[0])
+        check='Campus'
+        self.assertEqual(st,check)
+        
+        
+    def test_gbxml_descendent_elements(self):
+        g=Gbxml(config.xml,config.xsd)
+        l=g.descendent_elements(g.root(),label='Building')
+        st=g.label(l[0])
+        check='Building'
+        self.assertEqual(st,check)
+    
+        
+# ZONE FUNCTIONS
+    
+    def test_gbxml_add_zone(self):
+        g=Gbxml()
+        campus=g.add_element(g.root(),'Campus')
+        building=g.add_element(campus,'Building')
+        space=g.add_element(building,'Space')
+        space.set('id','space-1')
+        g.add_zone('zone-1','space-1')
+        l=g.elements('Zone')
+        check=1
+        self.assertEqual(len(l),check)
+        st=space.get('zoneIdRef')
+        check='zone-1'
+        self.assertEqual(st,check)
+        
+    
+    def test_gbxml_remove_zone(self):
+        g=Gbxml(config.xml,config.xsd)
+        g.remove_zone('ZONE_1')
+        l=g.elements('Zone')
+        check=0
+        self.assertEqual(len(l),check)
+        space=g.elements('Space')[0]
+        check=None
+        self.assertEqual(space.get('zoneIdRef'),check)
+        
         
         
 #    def test_gbxml_child_node_values(self):

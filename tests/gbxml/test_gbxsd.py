@@ -14,10 +14,8 @@ class Test_gbxsd(unittest.TestCase):
         g=Gbxsd(config.xsd)
         check=isinstance(g,Gbxsd)
         self.assertEqual(True,check)
-        print(g)
-        print(g._ElementTree)
-        print(g.ns)
         
+# HIDDEN METHODS
         
     def test__node_children_dict(self):
         g=Gbxsd(config.xsd)
@@ -43,24 +41,15 @@ class Test_gbxsd(unittest.TestCase):
         self.assertEqual(b,False)
         
         
-    def test_attribute_restriction_values(self):
+# ELEMENT METHODS
+    
+    def test_element_names(self):
         g=Gbxsd(config.xsd)
-        l=g.attribute_restriction_values('Absorptance','type')
-        check=['IntIR', 'IntSolar', 'IntVisible', 'IntTotal', 'ExtIR', 'ExtSolar', 'ExtVisible', 'ExtTotal']
-        self.assertEqual(l,check)
-        l=g.attribute_restriction_values('AdjacentSpaceId','spaceIdRef')
-        check=[]
-        self.assertEqual(l,check)
-        
-        
-    def test_attribute_restrictions_exist(self):
-        g=Gbxsd(config.xsd)
-        b=g.attribute_restrictions_exist('Absorptance','type')
-        self.assertEqual(b,True)
-        b=g.attribute_restrictions_exist('AdjacentSpaceId','spaceIdRef')
-        self.assertEqual(b,False)
-        
-        
+        l=g.element_names()
+        check=['gbXML', 'aecXML', 'Absorptance', 'AdjacentSpaceId', 'Age', 'AirChangesPerHour']
+        self.assertEqual(l[:6],check)
+    
+    
     def test_element_attributes_exist(self):
         g=Gbxsd(config.xsd)
         b=g.element_attributes_exist('gbXML')
@@ -87,6 +76,13 @@ class Test_gbxsd(unittest.TestCase):
         check=False
         self.assertEqual(b,check)
         
+        
+    def test_element_children_specification(self):
+        g=Gbxsd(config.xsd)
+        l=g.element_children_specification('gbXML')
+        check=[{'tag': 'choice', 'minOccurs': '0', 'maxOccurs': 'unbounded'}]
+        self.assertEqual(l,check)
+                
     
     def test_element_children_properties(self):
         g=Gbxsd(config.xsd)
@@ -95,22 +91,30 @@ class Test_gbxsd(unittest.TestCase):
         self.assertEqual(l[:2],check)
         
     
-    def test_element_children_specification(self):
+    
+        
+# ATTRIBUTE METHODS
+        
+    def test_attribute_restriction_values(self):
         g=Gbxsd(config.xsd)
-        l=g.element_children_specification('gbXML')
-        check=[{'tag': 'choice', 'minOccurs': '0', 'maxOccurs': 'unbounded'}]
+        l=g.attribute_restriction_values('Absorptance','type')
+        check=['IntIR', 'IntSolar', 'IntVisible', 'IntTotal', 'ExtIR', 'ExtSolar', 'ExtVisible', 'ExtTotal']
+        self.assertEqual(l,check)
+        l=g.attribute_restriction_values('AdjacentSpaceId','spaceIdRef')
+        check=[]
         self.assertEqual(l,check)
         
-    
-    def test_element_names(self):
-        g=Gbxsd(config.xsd)
-        l=g.element_names()
-        check=['gbXML', 'aecXML', 'Absorptance', 'AdjacentSpaceId', 'Age', 'AirChangesPerHour']
-        self.assertEqual(l[:6],check)
-    
-    
-    
         
+    def test_attribute_restrictions_exist(self):
+        g=Gbxsd(config.xsd)
+        b=g.attribute_restrictions_exist('Absorptance','type')
+        self.assertEqual(b,True)
+        b=g.attribute_restrictions_exist('AdjacentSpaceId','spaceIdRef')
+        self.assertEqual(b,False)
+        
+        
+    
+    
     
 #    
 #    

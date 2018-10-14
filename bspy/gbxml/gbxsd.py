@@ -16,6 +16,8 @@ class Gbxsd():
         self.ns={'a':'http://www.w3.org/2001/XMLSchema'}
     
     
+# HIDDEN METHODS
+    
     def _attribute(self,element_name,attribute_name):
         """Returns an attribute lxml node
         
@@ -121,6 +123,82 @@ class Gbxsd():
         except KeyError:
             return False
         
+        
+# ELEMENT METHODS
+        
+    def element_names(self):
+        """Returns a list of all element names
+        
+        """
+        st='/a:schema/a:element/@name'
+        return self._ElementTree.getroot().xpath(st,namespaces=self.ns)
+    
+    
+    def element_text_data_type(self,name):
+        pass
+        
+    
+    def element_attributes_exist(self,name):
+        """Returns True if the element can contain attributes, otherwise false        
+        
+        """
+        l=self._element_attributes(name)
+        return len(l)>0
+    
+    
+    def element_attributes_properties(self,name):
+        """Returns a list with the properties of the attributes
+        
+        return is a list of dictionaries i.e. 
+            [{'name': 'id', 'type': 'xsd:ID'}, {'name': 'engine'},...]
+        
+        """
+        l=self._element_attributes(name)
+        l1=[dict(x.attrib) for x in l]
+        return l1
+    
+    
+    def element_children_exist(self,name):
+        """Returns True if the element can contain child elements, otherwise false        
+        
+        """
+        l=self._element_children(name)
+        return len(l)>0
+        
+    
+    def element_children_specification(self,name):
+        """Returns a list with the child attributes
+        
+                
+        """
+        e=self._element(name)
+        st='.//a:all'
+        l=e.xpath(st,namespaces=self.ns)
+        st='.//a:choice'
+        l+=e.xpath(st,namespaces=self.ns)
+        l1=[{'tag':x.tag.split('}')[1],**dict(x.attrib)} for x in l]
+        return l1
+    
+    
+    def element_children_properties(self,name):
+        """Returns a list with the child attributes
+        
+        return is a list of dictionaries i.e. 
+            [{'ref': 'aecXML', 'minOccurs': '0'}, {'ref': 'Campus'},...]
+        
+        """
+        l=self._element_children(name)
+        l1=[dict(x.attrib) for x in l]
+        return l1
+    
+    
+    
+    
+    
+    
+    
+# ATTRIBUTE METHODS
+    
     
     def attribute_restriction_values(self,element_name,attribute_name):
         """Returns the possible values of a restricted attribute
@@ -164,70 +242,13 @@ class Gbxsd():
         return False
     
     
-    def element_attributes_exist(self,name):
-        """Returns True if the element can contain attributes, otherwise false        
-        
-        """
-        l=self._element_attributes(name)
-        return len(l)>0
-    
-    
-    def element_attributes_properties(self,name):
-        """Returns a list with the properties of the attributes
-        
-        return is a list of dictionaries i.e. 
-            [{'name': 'id', 'type': 'xsd:ID'}, {'name': 'engine'},...]
-        
-        """
-        l=self._element_attributes(name)
-        l1=[dict(x.attrib) for x in l]
-        return l1
     
     
     
     
-    def element_children_exist(self,name):
-        """Returns True if the element can contain child elements, otherwise false        
-        
-        """
-        l=self._element_children(name)
-        return len(l)>0
-        
     
-    def element_children_properties(self,name):
-        """Returns a list with the child attributes
-        
-        return is a list of dictionaries i.e. 
-            [{'ref': 'aecXML', 'minOccurs': '0'}, {'ref': 'Campus'},...]
-        
-        """
-        l=self._element_children(name)
-        l1=[dict(x.attrib) for x in l]
-        return l1
+   
     
-    
-    def element_children_specification(self,name):
-        """Returns a list with the child attributes
-        
-        return is a list of dictionaries i.e. 
-            [{'ref': 'aecXML', 'minOccurs': '0'}, {'ref': 'Campus'},...]
-        
-        """
-        e=self._element(name)
-        st='.//a:all'
-        l=e.xpath(st,namespaces=self.ns)
-        st='.//a:choice'
-        l+=e.xpath(st,namespaces=self.ns)
-        l1=[{'tag':x.tag.split('}')[1],**dict(x.attrib)} for x in l]
-        return l1
-    
-    
-    def element_names(self):
-        """Returns a list of all element names
-        
-        """
-        st='/a:schema/a:element/@name'
-        return self._ElementTree.getroot().xpath(st,namespaces=self.ns)
     
     
     

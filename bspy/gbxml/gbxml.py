@@ -61,7 +61,7 @@ class Gbxml():
         return etree.tostring(element,pretty_print=True).decode()
     
     
-    def xpath(self,st_xpath,element=None):
+    def xpath(self,element,st_xpath):
         """Returns the result of an xpath operation on the gbXML file
         
         Arguments
@@ -70,7 +70,6 @@ class Gbxml():
                 default is the root element
         
         """
-        if not element: element=self.root()
         return element.xpath(st_xpath,namespaces=self.ns)
     
     
@@ -151,10 +150,32 @@ class Gbxml():
     
     
     def remove_element(self,element):
-        pass
+        """Removes an element
+        
+        Arguments:
+            - element (lxml._Element or str): This a lxml._Element object
+                or a string with the element id.
+        
+        """
+        if isinstance(element,str):
+            element=self.element(element)
+        parent=element.getparent()
+        parent.remove(element)
+    
     
     def remove_attribute(self,element,key):
-        pass
+        """Removes an element
+        
+        Arguments:
+            - element (lxml._Element or str): This a lxml._Element object
+                or a string with the element id.
+            - key (str): The name of the attribute to delete
+        
+        """
+        if isinstance(element,str):
+            element=self.element(element)
+        element.attrib.pop(key)
+        
         
     def remove_text(self,element):
         pass
@@ -163,10 +184,15 @@ class Gbxml():
     
 # QUERYING
     
-    def elements(self):
-        "Returns all elements of the gbXML file"
-        st='//gbxml:*'
-        return self.xpath(st)
+    def elements(self,label='*'):
+        """Returns the elements of the gbXML file
+        
+        Arguments:
+            - label (str): the label of the elements
+        
+        """
+        st='//gbxml:%s' % label
+        return self.xpath(self.root(),st)
     
     
     def root(self):
@@ -183,7 +209,7 @@ class Gbxml():
         
         """
         st='//gbxml:%s[@id="%s"]' % (label,id)
-        return self.xpath(st)[0]
+        return self.xpath(self.root(),st)[0]
 
     
     def label(self,element):
@@ -199,23 +225,79 @@ class Gbxml():
             
     
     def attributes(self,element):
-        pass
+        """Returns the attributes of an element
+        
+        Return value is a dictionary
+        
+        Arguments:
+            - element (lxml._Element or str): This a lxml._Element object
+                or a string with the element id.        
+        """
+        if isinstance(element,str):
+            element=self.element(element)
+        return  dict(element.attrib)
 
     
     def text(self,element):
-        pass
-    
+        """Returns the text of an element, or None
+        
+        Return value is a string
+        
+        Arguments:
+            - element (lxml._Element or str): This a lxml._Element object
+                or a string with the element id.        
+        """
+        if isinstance(element,str):
+            element=self.element(element)
+        return element.text
+        
     
     def text_value(self,element):
-        pass
+        """Returns the text value of an element, i.e the text converted 
+            according to its schema data type
+        
+        Return value is an object with data type dependent on the schema
+        
+        Arguments:
+            - element (lxml._Element or str): This a lxml._Element object
+                or a string with the element id.        
+        """
+        if isinstance(element,str):
+            element=self.element(element)
+        text=element.text
+        
     
     
     def child_elements(self,element,label='*'):
-        pass
-    
-    
+        """Returns the child elements of an element
+        
+        Return value is a list of elements
+        
+        Arguments:
+            - element (lxml._Element or str): This a lxml._Element object
+                or a string with the element id.        
+            - label (str): the label of the element
+        """
+        if isinstance(element,str):
+            element=self.element(element)
+        st='./gbxml:%s' % label
+        return self.xpath(element,st)
+        
+        
     def descendent_elements(self,element,label='*'):
-        pass
+        """Returns the descendent elements of an element
+        
+        Return value is a list of elements
+        
+        Arguments:
+            - element (lxml._Element or str): This a lxml._Element object
+                or a string with the element id.        
+            - label (str): the label of the element
+        """
+        if isinstance(element,str):
+            element=self.element(element)
+        st='.//gbxml:%s' % label
+        return self.xpath(element,st)
     
   
     
@@ -237,15 +319,54 @@ class Gbxml():
         
         
     
-# FUNCTIONS - ZONE
+# ZONE FUNCTIONS
         
-    def zone_add_element(self,id):
-        """Adds a zone to the gbXML file.
+    def add_zone(self,zone_id,space_ids):
+        """Adds a zone element and the IdRef links to it.
+        
+        Arguments:
+            - zone_id (str): the id of the new zone
+            - space_ids (str or list): the ids of the spaces that link to the zone 
         """
+        #adds element
+        parent=self.root()
+        e=self.add_element(parent,'Zone')
+        self.set_attribute(e,'id',zone_id)
+        #adds links
+        if isinstance(space_ids,str):
+            space_ids=[space_ids]
+        for space_id in space_ids:
+            space=self.element(space_id,'Space')
+            self.set_attribute(space,'zoneIdRef',zone_id)
+        #returns the new zone element
+        return e
         
-    def zone_detach_delete(self,id):
+        
+        
+    def remove_zone(self,zone_element):
         """Removes a Zone element and all IdRef links to the zone.
+        
+        Arguments:
+            - zone_element (lxml._Element or str): This a lxml._Element object
+                or a string with the element id.        
         """
+        #find id
+        if isinstance(zone_element,str):
+            id=zone_element
+        else:
+            id=zone_element.get('id')
+        #find all elements with attribute zoneRefId=id
+        st='.//gbxml:*[@zoneIdRef="%s"]' % id
+        l=self.xpath(self.root(),st)
+        #removes all attributes zoneRefId=id
+        for x in l:
+            self.remove_attribute(x,'zoneIdRef')
+        #remove node
+        self.remove_element(zone_element)
+        
+        
+        
+        
         pass
         
     
