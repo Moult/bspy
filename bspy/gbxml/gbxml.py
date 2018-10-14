@@ -57,7 +57,7 @@ class Gbxml():
             - element (lxml.etree._Element): default is root node
         
         """
-        if not element: element=self.root()
+        if element is None: element=self.root()
         return etree.tostring(element,pretty_print=True).decode()
     
     
@@ -97,7 +97,7 @@ class Gbxml():
         
 # EDITING
         
-    def add_element(self,parent_element,label):
+    def add_element(self,parent_element,label,text=None,**kwargs):
         """Adds an element to the gbXML
         
         Returns the newly created element
@@ -107,12 +107,18 @@ class Gbxml():
                 new element is added to. This can be either a lxml._Element object
                 or a string with the element id.
             - label (str): the label or tag of the new element
+            - text (str): the text of the new element
+            - **kwargs (keywords): the attributes of the new element
                 
         """
         if isinstance(parent_element,str):
             parent_element=self.element(parent_element)
-        return etree.SubElement(parent_element,'{%s}%s' % (self.ns['gbxml'],label))
-    
+        e=etree.SubElement(parent_element,'{%s}%s' % (self.ns['gbxml'],label))
+        if text: e.text=text
+        if kwargs:
+            for k,v in kwargs.items():
+                e.set(k,v)
+        return e
     
     def set_attribute(self,element,key,value):
         """Sets the attribute of an element
@@ -317,6 +323,28 @@ class Gbxml():
         """Returns the outer Space element of a Surface, or None
         """
         
+
+# SPACE FUNCTIONS
+        
+    def set_space_id(self,space_element,id):
+        """Sets a new id attribute for a Space element and updates all links
+        
+        
+        """
+        if isinstance(space_element,str):
+            space_element=self.element(space_element)
+        #get old id
+        old_id=space_element.get('id')
+        #set new id
+        space_element.set('id',id)
+        #find all elements with attribute spaceRefId=old_id
+        st='.//gbxml:*[@spaceIdRef="%s"]' % old_id
+        l=self.xpath(self.root(),st)
+        #update with id
+        for e in l:
+            e.set('spaceIdRef',id)
+        #return new id 
+        return id
         
     
 # ZONE FUNCTIONS
@@ -365,9 +393,6 @@ class Gbxml():
         self.remove_element(zone_element)
         
         
-        
-        
-        pass
         
     
     
